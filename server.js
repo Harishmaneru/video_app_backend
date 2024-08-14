@@ -3,7 +3,7 @@ const cors = require('cors');
 const multer = require('multer');
 const { MongoClient } = require('mongodb');
 const path = require('path');
-
+const fs = require('fs');
 const app = express();
 const PORT = 3000;
 const uri = "mongodb+srv://harishmaneru:Xe2Mz13z83IDhbPW@cluster0.bu3exkw.mongodb.net/?retryWrites=true&w=majority&tls=true";
