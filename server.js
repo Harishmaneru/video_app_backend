@@ -53,6 +53,7 @@ MongoClient.connect(uri)
 
 
 app.post('/upload', (req, res) => {
+  console.log('video uploaded')
   upload(req, res, (err) => {
     if (err) {
       res.status(400).send({ message: err });
@@ -67,9 +68,11 @@ app.post('/upload', (req, res) => {
 
         db.collection('videos').insertOne(videoData)
           .then(result => {
+            console.log('video is uploadded successfully')
             res.json({ message: 'File uploaded and data saved to DB!', filePath: videoData.filePath });
           })
           .catch(error => {
+            console.log('video is failed to upload')
             res.status(500).send({ message: 'Failed to save data to DB.', error });
           });
       }
