@@ -12,7 +12,7 @@ const uri = "mongodb+srv://harishmaneru:Xe2Mz13z83IDhbPW@cluster0.bu3exkw.mongod
 
 app.use(cors());
 
-
+// Multer setup
 const storage = multer.diskStorage({
   destination: './uploads/',
   filename: (req, file, cb) => {
@@ -20,15 +20,13 @@ const storage = multer.diskStorage({
   }
 });
 
-
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 100000000 }, 
+  limits: { fileSize: 100000000 },
   fileFilter: (req, file, cb) => {
     checkFileType(file, cb);
   }
 }).single('video');
-
 
 function checkFileType(file, cb) {
   const filetypes = /webm|mp4|avi/;
@@ -42,7 +40,7 @@ function checkFileType(file, cb) {
   }
 }
 
-
+// MongoDB setup
 let db;
 MongoClient.connect(uri)
   .then(client => {
@@ -51,7 +49,7 @@ MongoClient.connect(uri)
   })
   .catch(error => console.error(error));
 
-
+// Routes
 app.post('/upload', (req, res) => {
   console.log('uploading video..')
   upload(req, res, (err) => {
@@ -72,22 +70,43 @@ app.post('/upload', (req, res) => {
             res.json({ message: 'File uploaded and data saved to DB!', filePath: videoData.filePath });
           })
           .catch(error => {
-            console.log('video is failed to upload')
+            console.log('video failed to upload')
             res.status(500).send({ message: 'Failed to save data to DB.', error });
           });
       }
     }
   });
 });
+
 app.get('/api/hello', (req, res) => {
   res.json({ message: 'Hello, World!' });
 });
-const options = {
-  key: fs.readFileSync('./onepgr.com.key', 'utf8'),
-  cert: fs.readFileSync('./STAR_onepgr_com.crt', 'utf8'),
-  ca: fs.readFileSync('./STAR_onepgr_com.ca-bundle', 'utf8')
-};
 
+// Serve uploaded files
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-const server = https.createServer(options, app);
-server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+
+// Server setup based on environment
+
+  const base_path = __dirname;
+  const privateKey = fs.readFileSync(base_path +'/onepgr.com.key',  'utf8');
+  const certificate = fs.readFileSync(base_path + '/STAR_onepgr_com.crt', 'utf8');
+  const caBundle = fs.readFileSync(base_path + '/STAR_onepgr_com.ca-bundle', 'utf8');
+  
+  const credentials = { key: privateKey, cert: certificate, ca: caBundle };
+  
+  const httpsServer = https.createServer(credentials, app);
+  
+  httpsServer.listen(PORT, () => {
+    console.log('HTTPS Server running on port ' + PORT);
+  });
+
+  
+  
+  // HTTP to HTTPS redirect
+  http.createServer((req, res) => {
+    res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` });
+    res.end();
+  }).listen(80);
+
+  // For development, run on HTTP
+  // app.listen(PORT, () => console.log(`HTTP Server started on port ${PORT}`));
