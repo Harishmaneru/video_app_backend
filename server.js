@@ -103,10 +103,10 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
   
   
   // HTTP to HTTPS redirect
-  http.createServer((req, res) => {
-    res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` });
-    res.end();
-  }).listen(80);
+  // http.createServer((req, res) => {
+  //   res.writeHead(301, { Location: `https://${req.headers.host}${req.url}` });
+  //   res.end();
+  // }).listen(80);
 
   // For development, run on HTTP
   // app.listen(PORT, () => console.log(`HTTP Server started on port ${PORT}`));
