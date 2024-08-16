@@ -89,5 +89,5 @@ const options = {
 };
 
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-const server = http.createServer(options, app);
+const server = https.createServer(options, app);
 server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
