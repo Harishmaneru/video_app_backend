@@ -7,7 +7,7 @@ const fs = require('fs');
 const https = require("https");
 const http = require("http");
 const app = express();
-const PORT = 443;
+const PORT = 3000;
 const uri = "mongodb+srv://harishmaneru:Xe2Mz13z83IDhbPW@cluster0.bu3exkw.mongodb.net/?retryWrites=true&w=majority&tls=true";
 
 app.use(cors());
