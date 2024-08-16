@@ -53,7 +53,7 @@ MongoClient.connect(uri)
 
 
 app.post('/upload', (req, res) => {
-  console.log('video uploaded')
+  console.log('uploading video..')
   upload(req, res, (err) => {
     if (err) {
       res.status(400).send({ message: err });
@@ -68,7 +68,7 @@ app.post('/upload', (req, res) => {
 
         db.collection('videos').insertOne(videoData)
           .then(result => {
-            console.log('video is uploadded successfully')
+            console.log('video is uploaded successfully')
             res.json({ message: 'File uploaded and data saved to DB!', filePath: videoData.filePath });
           })
           .catch(error => {
@@ -79,7 +79,9 @@ app.post('/upload', (req, res) => {
     }
   });
 });
-
+app.get('/api/hello', (req, res) => {
+  res.json({ message: 'Hello, World!' });
+});
 const options = {
   key: fs.readFileSync('./onepgr.com.key', 'utf8'),
   cert: fs.readFileSync('./STAR_onepgr_com.crt', 'utf8'),
