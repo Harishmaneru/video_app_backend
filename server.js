@@ -9,7 +9,6 @@ const http = require("http");
 const app = express();
 const PORT = 3000;
 const uri = "mongodb+srv://harishmaneru:Xe2Mz13z83IDhbPW@cluster0.bu3exkw.mongodb.net/?retryWrites=true&w=majority&tls=true";
-
 app.use(cors());
 
 
@@ -19,8 +18,6 @@ const storage = multer.diskStorage({
     cb(null, `video-${Date.now()}${path.extname(file.originalname)}`);
   }
 });
-
-
 const upload = multer({
   storage: storage,
   limits: { fileSize: 100000000 }, 
@@ -53,11 +50,13 @@ MongoClient.connect(uri)
 
 
 app.post('/upload', (req, res) => {
+  console.log('video uploading...')
   upload(req, res, (err) => {
     if (err) {
       res.status(400).send({ message: err });
     } else {
       if (req.file === undefined) {
+        
         res.status(400).send({ message: 'No file selected!' });
       } else {
         const videoData = {
@@ -68,6 +67,7 @@ app.post('/upload', (req, res) => {
         db.collection('videos').insertOne(videoData)
           .then(result => {
             res.json({ message: 'File uploaded and data saved to DB!', filePath: videoData.filePath });
+            console.log('video uploaded successfully!...')
           })
           .catch(error => {
             res.status(500).send({ message: 'Failed to save data to DB.', error });
@@ -82,7 +82,6 @@ app.post('/upload', (req, res) => {
 //   cert: fs.readFileSync('./STAR_onepgr_com.crt', 'utf8'),
 //   ca: fs.readFileSync('./STAR_onepgr_com.ca-bundle', 'utf8')
 // };
-
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-const server = http.createServer(app);
+const server = https.createServer(app);
 server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
