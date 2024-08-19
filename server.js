@@ -77,11 +77,11 @@ app.post('/upload', (req, res) => {
   });
 });
 
-const options = {
-  key: fs.readFileSync('./onepgr.com.key', 'utf8'),
-  cert: fs.readFileSync('./STAR_onepgr_com.crt', 'utf8'),
-  ca: fs.readFileSync('./STAR_onepgr_com.ca-bundle', 'utf8')
-};
+// const options = {
+//   key: fs.readFileSync('./onepgr.com.key', 'utf8'),
+//   cert: fs.readFileSync('./STAR_onepgr_com.crt', 'utf8'),
+//   ca: fs.readFileSync('./STAR_onepgr_com.ca-bundle', 'utf8')
+// };
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-const server = https.createServer(options, app);
+const server = http.createServer(app);
 server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
