@@ -87,5 +87,5 @@ app.get('/api/hello', (req, res) => {
 //   ca: fs.readFileSync('./STAR_onepgr_com.ca-bundle', 'utf8')
 // };
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-const server = https.createServer(app);
+const server = http.createServer(app);
 server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
