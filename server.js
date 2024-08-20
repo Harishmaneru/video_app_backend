@@ -11,7 +11,6 @@ const PORT = 3000;
 const uri = "mongodb+srv://harishmaneru:Xe2Mz13z83IDhbPW@cluster0.bu3exkw.mongodb.net/?retryWrites=true&w=majority&tls=true";
 app.use(cors());
 
-
 const storage = multer.diskStorage({
   destination: './uploads/',
   filename: (req, file, cb) => {
@@ -25,8 +24,6 @@ const upload = multer({
     checkFileType(file, cb);
   }
 }).single('video');
-
-
 function checkFileType(file, cb) {
   const filetypes = /webm|mp4|avi/;
   const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
@@ -38,8 +35,6 @@ function checkFileType(file, cb) {
     cb('Error: Videos Only!');
   }
 }
-
-
 let db;
 MongoClient.connect(uri)
   .then(client => {
@@ -47,8 +42,6 @@ MongoClient.connect(uri)
     db = client.db('videoUploads');
   })
   .catch(error => console.error(error));
-
-
 app.post('/upload', (req, res) => {
   console.log('video uploading...')
   upload(req, res, (err) => {
@@ -81,11 +74,11 @@ app.get('/api/hello', (req, res) => {
   res.json({ message: 'Hello, World!' });
 });
 
-// const options = {
-//   key: fs.readFileSync('./onepgr.com.key', 'utf8'),
-//   cert: fs.readFileSync('./STAR_onepgr_com.crt', 'utf8'),
-//   ca: fs.readFileSync('./STAR_onepgr_com.ca-bundle', 'utf8')
-// };
+const options = {
+  key: fs.readFileSync('./onepgr.com.key', 'utf8'),
+  cert: fs.readFileSync('./STAR_onepgr_com.crt', 'utf8'),
+  ca: fs.readFileSync('./STAR_onepgr_com.ca-bundle', 'utf8')
+};
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-const server = http.createServer(app);
+const server = https.createServer(options, app);
 server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
