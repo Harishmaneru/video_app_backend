@@ -80,7 +80,7 @@ app.post('/upload', (req, res) => {
           // Send email after successful submission
           const mailOptions = {
             from: 'harishmaneru44@gmail.com',
-            to: 'harish@onepgr.us',
+            to: 'rajiv@onepgr.com',
             subject: 'New Application Submitted',
             html: `
               <h1>New Application Details</h1>
