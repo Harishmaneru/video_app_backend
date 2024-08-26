@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const https = require("https");
 const http = require("http");
-
+const nodemailer = require('nodemailer');
 const app = express();
 const PORT = 3000;
 const uri = "mongodb+srv://harishmaneru:Xe2Mz13z83IDhbPW@cluster0.bu3exkw.mongodb.net/?retryWrites=true&w=majority&tls=true";
@@ -51,7 +51,13 @@ MongoClient.connect(uri)
     db = client.db('videoUploads');
   })
   .catch(error => console.error(error));
-
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: 'harishmaneru44@gmail.com',
+      pass: 'msxk vvgy ymhz ysbr'  
+    }
+  });
 app.post('/upload', (req, res) => {
   console.log('Processing upload request...');
   upload(req, res, (err) => {
@@ -70,16 +76,38 @@ app.post('/upload', (req, res) => {
         };
 
         db.collection('applications').insertOne(videoData)
-          .then(result => {
-            res.json({ message: 'Application submitted successfully!', id: result.insertedId });
-            console.log('Application submitted successfully!');
-          })
-          .catch(error => {
-            res.status(500).send({ message: 'Failed to save data to DB.', error });
+        .then(result => {
+          // Send email after successful submission
+          const mailOptions = {
+            from: 'harishmaneru44@gmail.com',
+            to: 'harish@onepgr.us',
+            subject: 'New Application Submitted',
+            html: `
+              <h1>New Application Details</h1>
+              <p>Form Data:</p>
+              ${Object.entries(formData).map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`).join('')}
+              <p>Video Links:</p>
+              <ul>
+                <li>Video 1: ${req.protocol}://${req.get('host')}${videoData.video1Path}</li>
+                <li>Video 2: ${req.protocol}://${req.get('host')}${videoData.video2Path}</li>
+              </ul>
+            `
+          };
+          
+          transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+              console.log('Error sending email:', error);
+              res.status(500).send({ message: 'Failed to send email.', error });
+            } else {
+              console.log('Email sent:', info.response);
+              res.json({ message: 'Application submitted successfully!', id: result.insertedId });
+              console.log('Application submitted successfully!');
+            }
           });
-      }
+        });
     }
-  });
+  }
+});
 });
 
 app.get('/api/hello', (req, res) => {
@@ -97,3 +125,5 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const server = https.createServer(options, app);
 
 server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+
+
