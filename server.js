@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const https = require("https");
 const http = require("http");
-const nodemailer = require('nodemailer');
+// const nodemailer = require('nodemailer'); // Commented out nodemailer import
 const app = express();
 const PORT = 3000;
 const uri = "mongodb+srv://harishmaneru:Xe2Mz13z83IDhbPW@cluster0.bu3exkw.mongodb.net/?retryWrites=true&w=majority&tls=true";
@@ -23,7 +23,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 100000000 },
+  limits: { fileSize: 300000000 },
   fileFilter: (req, file, cb) => {
     checkFileType(file, cb);
   }
@@ -51,13 +51,18 @@ MongoClient.connect(uri)
     db = client.db('videoUploads');
   })
   .catch(error => console.error(error));
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-      user: 'harishmaneru44@gmail.com',
-      pass: 'msxk vvgy ymhz ysbr'  
-    }
-  });
+
+// Commented out nodemailer configuration
+/*
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: 'harishmaneru44@gmail.com',
+    pass: 'msxk vvgy ymhz ysbr'  
+  }
+});
+*/
+
 app.post('/upload', (req, res) => {
   console.log('Processing upload request...');
   upload(req, res, (err) => {
@@ -77,7 +82,8 @@ app.post('/upload', (req, res) => {
 
         db.collection('applications').insertOne(videoData)
         .then(result => {
-          // Send email after successful submission
+          // Send email after successful submission (Commented out)
+          /*
           const mailOptions = {
             from: 'harishmaneru44@gmail.com',
             to: 'rajiv@onepgr.com',
@@ -104,10 +110,13 @@ app.post('/upload', (req, res) => {
               console.log('Application submitted successfully!');
             }
           });
+          */
+          res.json({ message: 'Application submitted successfully!', id: result.insertedId });
+          console.log('Application submitted successfully!');
         });
+      }
     }
-  }
-});
+  });
 });
 
 app.get('/api/hello', (req, res) => {
@@ -123,7 +132,4 @@ const options = {
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const server = https.createServer(options, app);
-
 server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
-
-
