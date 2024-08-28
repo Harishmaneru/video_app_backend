@@ -51,8 +51,6 @@ MongoClient.connect(uri)
   })
   .catch(error => console.error(error));
 
-
-
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
@@ -60,7 +58,6 @@ const transporter = nodemailer.createTransport({
     pass: 'jwto ghgt mnec exrb'
   }
 });
-
 
 app.post('/upload', (req, res) => {
   console.log('Processing upload request...');
@@ -89,13 +86,26 @@ app.post('/upload', (req, res) => {
               subject: `VIDQU SUBMISSION - ${nameOfPerson} - ${currentDate}`,
               html: `
               <h1>New Application Details</h1>
-              <p>Form Data:</p>
-              ${Object.entries(formData).map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`).join('')}
-              <p>Video Links:</p>
-              <ul>
-                <li>Video 1: ${req.protocol}://${req.get('host')}${videoData.video1Path}</li>
-                <li>Video 2: ${req.protocol}://${req.get('host')}${videoData.video2Path}</li>
-              </ul>
+        <table style="border-collapse: collapse; width: 60%;">
+          <tr>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Field</th>
+            <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Information</th>
+          </tr>
+          ${Object.entries(formData)
+                  .filter(([key]) => key !== 'sendConfirmationEmail')
+                  .map(([key, value]) => `
+              <tr>
+                <td style="border: 1px solid #ddd; padding: 8px;"><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong></td>
+                <td style="border: 1px solid #ddd; padding: 8px;">${value}</td>
+              </tr>
+            `).join('')}
+        </table>
+
+        <h3>Video Submissions:</h3>
+        <ul>
+          <li>Video 1: <a href="${req.protocol}://${req.get('host')}${videoData.video1Path}">View Video 1</a></li>
+          <li>Video 2: <a href="${req.protocol}://${req.get('host')}${videoData.video2Path}">View Video 2</a></li>
+        </ul>
             `
             };
 
@@ -105,13 +115,50 @@ app.post('/upload', (req, res) => {
                 res.status(500).send({ message: 'Failed to send email.', error });
               } else {
                 console.log('Email sent:', info.response);
+
+                // Send confirmation email to applicant if checkbox is checked
+                if (formData.sendConfirmationEmail === 'true') {
+                  const applicantMailOptions = {
+                    from: 'harish@onepgr.us',
+                    to: formData.email,
+                    subject: 'Application Received - Thank You!',
+                    html: `
+                    <h2>Thank You for Your Application</h2>
+                    <p>Dear ${nameOfPerson},</p>
+                    <p>We have received your application for the position of ${formData.jobTitle}. Thank you for your interest in joining our team.</p>
+                    
+                    <h3>Application Details:</h3>
+                    <table style="border-collapse: collapse; width: 50%;">
+                      <tr>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Field</th>
+                        <th style="border: 1px solid #ddd; padding: 8px; text-align: left; background-color: #f2f2f2;">Information</th>
+                      </tr>
+                      ${Object.entries(formData)
+                        .filter(([key]) => key !== 'sendConfirmationEmail')
+                        .map(([key, value]) => `
+                          <tr>
+                            <td style="border: 1px solid #ddd; padding: 8px;"><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong></td>
+                            <td style="border: 1px solid #ddd; padding: 8px;">${value}</td>
+                          </tr>
+                        `).join('')}
+                    </table>
+                    <p>Our team will carefully review your application and get back to you regarding the next steps in the process.</p>
+                    <p>We appreciate your interest and wish you the best in your job search.</p>
+                    <p>Best regards,<br>ONEPGR Recruitment Team</p>
+                  `
+                  };
+                  transporter.sendMail(applicantMailOptions, (applicantError, applicantInfo) => {
+                    if (applicantError) {
+                      console.log('Error sending confirmation email to applicant:', applicantError);
+                    } else {
+                      console.log('Confirmation email sent to applicant:', applicantInfo.response);
+                    }
+                  });
+                }
                 res.json({ message: 'Application submitted successfully!', id: result.insertedId });
                 console.log('Application submitted successfully!');
               }
             });
-
-            res.json({ message: 'Application submitted successfully!', id: result.insertedId });
-            console.log('Application submitted successfully!');
           });
       }
     }
@@ -121,14 +168,11 @@ app.post('/upload', (req, res) => {
 app.get('/api/hello', (req, res) => {
   res.json({ message: 'Hello, World!' });
 });
-
 const options = {
   key: fs.readFileSync('./onepgr.com.key', 'utf8'),
   cert: fs.readFileSync('./STAR_onepgr_com.crt', 'utf8'),
   ca: fs.readFileSync('./STAR_onepgr_com.ca-bundle', 'utf8')
 };
-
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
 const server = https.createServer(options, app);
 server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
