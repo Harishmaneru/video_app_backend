@@ -6,11 +6,10 @@ const path = require('path');
 const fs = require('fs');
 const https = require("https");
 const http = require("http");
- const nodemailer = require('nodemailer'); 
+const nodemailer = require('nodemailer');
 const app = express();
 const PORT = 3000;
 const uri = "mongodb+srv://harishmaneru:Xe2Mz13z83IDhbPW@cluster0.bu3exkw.mongodb.net/?retryWrites=true&w=majority&tls=true";
-
 app.use(cors());
 app.use(express.json());
 
@@ -57,8 +56,8 @@ MongoClient.connect(uri)
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'harishmaneru44@gmail.com',
-    pass: 'msxk vvgy ymhz ysbr'  
+    user: 'harish@onepgr.us',
+    pass: 'jwto ghgt mnec exrb'
   }
 });
 
@@ -81,14 +80,14 @@ app.post('/upload', (req, res) => {
         };
 
         db.collection('applications').insertOne(videoData)
-        .then(result => {
-          
-         
-          const mailOptions = {
-            from: 'harishmaneru44@gmail.com',
-            to: 'rajiv@onepgr.com',
-            subject: 'New Application Submitted',
-            html: `
+          .then(result => {
+            const nameOfPerson = formData.fullName || 'Applicant';
+            const currentDate = new Date().toLocaleDateString('en-US');
+            const mailOptions = {
+              from: 'harish@onepgr.us',
+              to: 'rajiv@onepgr.com',
+              subject: `VIDQU SUBMISSION - ${nameOfPerson} - ${currentDate}`,
+              html: `
               <h1>New Application Details</h1>
               <p>Form Data:</p>
               ${Object.entries(formData).map(([key, value]) => `<p><strong>${key}:</strong> ${value}</p>`).join('')}
@@ -98,22 +97,22 @@ app.post('/upload', (req, res) => {
                 <li>Video 2: ${req.protocol}://${req.get('host')}${videoData.video2Path}</li>
               </ul>
             `
-          };
-          
-          transporter.sendMail(mailOptions, (error, info) => {
-            if (error) {
-              console.log('Error sending email:', error);
-              res.status(500).send({ message: 'Failed to send email.', error });
-            } else {
-              console.log('Email sent:', info.response);
-              res.json({ message: 'Application submitted successfully!', id: result.insertedId });
-              console.log('Application submitted successfully!');
-            }
+            };
+
+            transporter.sendMail(mailOptions, (error, info) => {
+              if (error) {
+                console.log('Error sending email:', error);
+                res.status(500).send({ message: 'Failed to send email.', error });
+              } else {
+                console.log('Email sent:', info.response);
+                res.json({ message: 'Application submitted successfully!', id: result.insertedId });
+                console.log('Application submitted successfully!');
+              }
+            });
+
+            res.json({ message: 'Application submitted successfully!', id: result.insertedId });
+            console.log('Application submitted successfully!');
           });
-         
-          res.json({ message: 'Application submitted successfully!', id: result.insertedId });
-          console.log('Application submitted successfully!');
-        });
       }
     }
   });
