@@ -28,18 +28,39 @@ const upload = multer({
   }
 }).fields([
   { name: 'video1', maxCount: 1 },
-  { name: 'video2', maxCount: 1 }
+  { name: 'video2', maxCount: 1 },
+  { name: 'resume', maxCount: 1 }
 ]);
 
 function checkFileType(file, cb) {
-  const filetypes = /webm|mp4|avi/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
+  // Check if it's a resume file
+  if (file.fieldname === 'resume') {
+    const resumeFiletypes = /pdf|doc|docx/;
+    const extname = resumeFiletypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = file.mimetype.includes('pdf') || 
+                    file.mimetype.includes('document') || 
+                    file.mimetype.includes('msword') ||
+                    file.mimetype.includes('application/vnd.openxmlformats-officedocument.wordprocessingml.document');
 
-  if (mimetype && extname) {
-    return cb(null, true);
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb('Error: Resume must be PDF or Word document!');
+    }
+  } 
+  // Check if it's a video file
+  else if (file.fieldname === 'video1' || file.fieldname === 'video2') {
+    const videoFiletypes = /webm|mp4|avi/;
+    const extname = videoFiletypes.test(path.extname(file.originalname).toLowerCase());
+    const mimetype = videoFiletypes.test(file.mimetype);
+
+    if (mimetype && extname) {
+      return cb(null, true);
+    } else {
+      cb('Error: Videos Only!');
+    }
   } else {
-    cb('Error: Videos Only!');
+    cb('Error: Unknown file type!');
   }
 }
 
@@ -61,6 +82,7 @@ const transporter = nodemailer.createTransport({
 
 app.post('/upload', (req, res) => {
   console.log('Processing upload request...');
+
   upload(req, res, (err) => {
     if (err) {
       res.status(400).send({ message: err });
@@ -68,10 +90,12 @@ app.post('/upload', (req, res) => {
       if (!req.files || !req.files.video1 || !req.files.video2) {
         res.status(400).send({ message: 'Both video files are required!' });
       } else {
+        
         const formData = req.body;
         const videoData = {
           video1Path: `/uploads/${req.files.video1[0].filename}`,
           video2Path: `/uploads/${req.files.video2[0].filename}`,
+          resumePath: `/uploads/${req.files.resume[0].filename}`,
           uploadDate: new Date(),
           formData: formData
         };
@@ -80,9 +104,11 @@ app.post('/upload', (req, res) => {
           .then(result => {
             const nameOfPerson = formData.fullName || 'Applicant';
             const currentDate = new Date().toLocaleDateString('en-US');
+            const resumeDownloadUrl = `${req.protocol}://${req.get('host')}${videoData.resumePath}`;
             const mailOptions = {
               from: 'harish@onepgr.us',
-              to: 'rajiv@onepgr.com',
+              // to: 'harishmaneru@gmail.com',
+              to: 'rajiv@onepgr.com',  
               subject: `VIDQU SUBMISSION - ${nameOfPerson} - ${currentDate}`,
               html: `
               <h1>New Application Details</h1>
@@ -105,6 +131,7 @@ app.post('/upload', (req, res) => {
         <ul>
           <li>Video 1: <a href="${req.protocol}://${req.get('host')}${videoData.video1Path}">View Video 1</a></li>
           <li>Video 2: <a href="${req.protocol}://${req.get('host')}${videoData.video2Path}">View Video 2</a></li>
+          <li> <a href="${resumeDownloadUrl}">Download Resume</a></li>
         </ul>
             `
             };
@@ -165,9 +192,12 @@ app.post('/upload', (req, res) => {
   });
 });
 
-app.get('/api/hello', (req, res) => {
-  res.json({ message: 'Hello, World!' });
-});
+
+
+
+// app.get('/api/hello', (req, res) => {
+//   res.json({ message: 'Hello, World!' });
+// });
 const options = {
   key: fs.readFileSync('./onepgr.com.key', 'utf8'),
   cert: fs.readFileSync('./STAR_onepgr_com.crt', 'utf8'),
