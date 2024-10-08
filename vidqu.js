@@ -11,6 +11,7 @@ const PORT = 3000;
 app.use(cors());
 app.use(express.json());
 
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Import routes from other files
 const feedbackRoutes = require('./feedback');
