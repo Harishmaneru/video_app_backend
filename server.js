@@ -8,7 +8,7 @@ const https = require("https");
 const http = require("http");
 const nodemailer = require('nodemailer');
 const app = express();
-const PORT = 3000;
+const router = express.Router();
 const uri = "mongodb+srv://harishmaneru:Xe2Mz13z83IDhbPW@cluster0.bu3exkw.mongodb.net/?retryWrites=true&w=majority&tls=true";
 app.use(cors());
 app.use(express.json());
@@ -80,7 +80,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-app.post('/upload', (req, res) => {
+router.post('/', (req, res) => {
   console.log('Processing upload request...');
 
   upload(req, res, (err) => {
@@ -108,7 +108,7 @@ app.post('/upload', (req, res) => {
             const mailOptions = {
               from: 'harish@onepgr.us',
               // to: 'harishmaneru@gmail.com',
-              to: 'rajiv@onepgr.com',  
+               to: 'rajiv@onepgr.com',  
               subject: `VIDQU SUBMISSION - ${nameOfPerson} - ${currentDate}`,
               html: `
               <h1>New Application Details</h1>
@@ -192,17 +192,17 @@ app.post('/upload', (req, res) => {
   });
 });
 
-
+module.exports = router;
 
 
 // app.get('/api/hello', (req, res) => {
 //   res.json({ message: 'Hello, World!' });
 // });
-const options = {
-  key: fs.readFileSync('./onepgr.com.key', 'utf8'),
-  cert: fs.readFileSync('./STAR_onepgr_com.crt', 'utf8'),
-  ca: fs.readFileSync('./STAR_onepgr_com.ca-bundle', 'utf8')
-};
-app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-const server = https.createServer(options, app);
-server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
+// const options = {
+//   key: fs.readFileSync('./onepgr.com.key', 'utf8'),
+//   cert: fs.readFileSync('./STAR_onepgr_com.crt', 'utf8'),
+//   ca: fs.readFileSync('./STAR_onepgr_com.ca-bundle', 'utf8')
+// };
+// app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+// const server = https.createServer(options, app);
+// server.listen(PORT, () => console.log(`Server started on port ${PORT}`));
