@@ -107,8 +107,8 @@ router.post('/', (req, res) => {
             const resumeDownloadUrl = `${req.protocol}://${req.get('host')}${videoData.resumePath}`;
             const mailOptions = {
               from: 'harish@onepgr.us',
-              // to: 'harishmaneru@gmail.com',
-               to: 'rajiv@onepgr.com',  
+              //  to: 'harishmaneru@gmail.com',
+              to: 'rajiv@onepgr.com',  
               subject: `VIDQU SUBMISSION - ${nameOfPerson} - ${currentDate}`,
               html: `
               <h1>New Application Details</h1>
